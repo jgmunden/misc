@@ -5,7 +5,6 @@
 
 makemap= function(x,area="ens", wd="C:/Rsaves/maps", addlabels=T, title="" ){
   require(PBSmapping)
-  
 
   borders= read.csv(file=file.path(wd,"areaborders.csv"), head=T, sep=",")
   b=borders[which(borders$area==area),]
