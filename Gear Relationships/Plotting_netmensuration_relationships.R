@@ -1,11 +1,15 @@
+  # Update on data frames, after timestamp issue have been fixed, including only those sets which passed the SD threshold
+  gs = scanmar.db( DS="bottom.contact", p=p)  # bring in estimates of bottom contact times from scanmar
+  filtered = scanmar.db( DS="scanmar.filtered",  p=p )  # bring in estimates of bottom contact times from scanmar
+  load("master.updated.RData")
+  
 
   # Data frames which include ALL scanmar data, not filtered for bottom contac
   load("goose.RData") # those where there are 50% or more number of data measurements for headline and wingspread 
   load("duck.RData") # those where there are 50% or more number of data measurements for doorspread and wingspread
   
-  # Data that has been filtered to include only measurements considered part of fishing time
-  filtered = net_mensuration.db( DS="scanmar.filtered",  net.root.dir=net.root.dir )  # bring in estimates of bottom contact times from scanmar
   # filtered data put through the linear model
+  setwd("C:/cygwin64/home/mundenj/work")
   load("filteredlm.RData")
 
   # Born out of gsinf, includes the start and end times indicated by winch action, and our estimate
@@ -61,10 +65,10 @@
       unique(filteredlm$year)
     --------------------------------------------------------------------------------------------------------------------------------------  
           # two time frames, post 2013, and pre 2013
-          post =filtered[which(filtered$year %in% 2013:2014) , ]
-          pre=filtered[which(filtered$year %in% 2004:2011) , ]
-          plot(wingspread~doorspread,data=post, type = "p", col = "red", pch="19", cex=0.5)
-          points(wingspread~doorspread,data=pre, type = "p", col = "grey", pch="19", cex=0.5)
+          post =filteredlm[which(filteredlm$year %in% 2013:2014) , ]
+          pre=filteredlm[which(filteredlm$year %in% 2004:2011) , ]
+          plot(wingspread~doorspread,data=post, type = "p", col = "red", pch=".")
+          points(wingspread~doorspread,data=pre, type = "p", col = "grey", pch=".")
             legend(80,15, c("2004-2012", "2013 & 2014"), lty=c(1,1), 
                    lwd=c(2.5,2.5), col=c("grey","red"))
         
@@ -78,11 +82,11 @@
           
           # 2012
           f12 =filteredlm[which(filteredlm$year == 2012) , ]
-          points(wingspread~doorspread,data=f12, type = "p", col = "purple", pch=".")
-          plot(wingspread~doorspread,data=pre, type = "p", col = "grey", pch=".")
-          points(wingspread~doorspread,data=post, type = "p", col = "light green", pch=".")
+          points(wingspread~doorspread,data=f12, type = "p", col = "blue", pch=".")
+          plot(wingspread~doorspread,data=pre, type = "p", col = " darkgrey", pch=".")
+          points(wingspread~doorspread,data=post, type = "p", col = "black", pch=".")
             legend(80,15, c("2012", "2004-2011", "2013-2014"), lty=c(1,1), 
-                   lwd=c(2.5,2.5), col=c("purple","grey", "green"))
+                   lwd=c(2.5,2.5), col=c("blue","grey", "black"))
   
   
                     # Calculations for powerpoint presentation
@@ -110,7 +114,7 @@
   
   
   # Random sample of filtered
-  r.samp=filtered[sample(1:nrow(filtered), 250000, replace=FALSE),]
+  r.samp=filteredlm[sample(1:nrow(filteredlm), 250000, replace=FALSE),]
   yr14=r.samp[which(r.samp$year == 2014) , ]
   yr13=r.samp[which(r.samp$year == 2013) , ]
   yr12=r.samp[which(r.samp$year == 2012) , ] 
@@ -247,18 +251,18 @@
         s867 = t2[which(t2$set %in% 86:87) , ]        
           
             # Doorspread vs Wingspread
-            plot(wingspread~doorspread, t2, pch=".", col="grey")
+            plot(wingspread~doorspread, t2, pch=".", col="grey", ylim=c(10,20), xlim=c(25, 80))
             
-            points(wingspread~doorspread, s1, col="blue", pch=".")
-            points(wingspread~doorspread, s2, col="green", pch=".")
-            points(wingspread~doorspread, s3, col="red", pch=".")
+            points(wingspread~doorspread, s1, col="blue", pch=19, cex=0.1)
+            points(wingspread~doorspread, s2, col="green", pch=19, cex=0.1)
+            points(wingspread~doorspread, s3, col="red", pch=19, cex=0.1)
   
-            points(wingspread~doorspread, s889, col="blue", pch=".")
-            points(wingspread~doorspread, s867, col="green", pch=".")
+            points(wingspread~doorspread, s889, col="blue", pch=19, cex=0.1)
+            points(wingspread~doorspread, s867, col="green", pch=19, cex=0.1)
             
             # Latitude vs Longitude
       
-            legend(70,10, c("sets 1-85","sets 91-100","sets 101-141"), lty=c(1,1), 
+            legend(70,14, c("sets 1-85, 88-89","sets 91-100, 86-87","sets 101-141"), lty=c(1,1), 
                    lwd=c(2.5,2.5), col=c("blue","green", "red"))
       
             # Plot with land
@@ -300,7 +304,7 @@
                lwd=c(2.5,2.5), col=c("blue","green", "purple", "yellow", "pink", "forest green", "grey", "orange"))
 
   # Doorspread and depth
-    plot(doorspread~depth, r.samp, pch=19, cex=0.3, main = "Depth, Doorspread", xlim=c(0,600))
+    plot(doorspread~depth, r.samp, pch=19, cex=0.3, xlim=c(0,600))
       points(doorspread~depth, yr14, col="green", pch=19, cex=0.8)
       points(doorspread~depth, yr13, col="orange", pch=21, cex=1.2)
       points(doorspread~depth, yr12, col="red", pch=22, cex=0.85)
@@ -317,12 +321,13 @@
   
   
   # Modelling doorspread predicted values with Loess
-  plot(doorspread~depth, r.samp, pch=19, cex=0.3, main = "Depth, Doorspread", xlim=c(0,600), col="grey")
+  plot(doorspread~depth, r.samp, pch=19, cex=0.3, xlim=c(0,600), col="grey")
   depth = seq(0, 600, by=10)
   y.loess <- loess(doorspread ~ depth, span=0.25, data=r.samp)
   y.predict <- predict(y.loess, newdata=data.frame(depth=depth))
   lines(y.predict~depth, col="blue")
   legend(500,40, c("predicted values"), lty=c(1,1), lwd=c(2.5,2.5), col=c( "blue"))
+  text(30,80, "Doorspread")
   
   # Wingspread and depth
     plot(wingspread~depth, r.samp, pch=19, cex=0.3, xlim=c(0,400))
@@ -340,25 +345,30 @@
 
         # Plot the standard
         # Exclude yr 6 and yr 3 for presentation
-        abline(h=12.5, col = "red", lty="dotted")
+        abline(h=12.5, col = "red", lty=2.5)
         legend(500,40, c("standard = 12.5m", "predicted values"), lty=c(1,1), 
                lwd=c(2.5,2.5), col=c("red", "blue"))
-  
-      # Modelling wingspread predicted values wiht Loess
-      plot(wingspread~depth, r.samp, pch=19, cex=0.3, col="grey", main="Wingspread/Depth", na.action="na.exclude" )
+-------------------------------------------------------------------------------------------------------  
+      # Modelling wingspread predicted values with Loess
+      plot(wingspread~depth, r.samp, pch=19, cex=0.3, col="grey", na.action="na.exclude", xlim=c(0,600))
       depth = seq(0, 750, by=10)
       y.loess <- loess(wingspread ~ depth, span=0.25, data=r.samp)
       y.predict <- predict(y.loess, newdata=data.frame(depth=depth))
       lines(y.predict~depth, col="blue")
+      text(30,23, "Wingspread")
+      abline(h=12.5, col = "red")
+      legend(500,25, c("standard = 12.5m"), lty=c(1,1), 
+            lwd=c(2.5,2.5), col=c("red"))
   
   
         # Modelling predicted values of headline height with Loess
-        plot(opening~depth, r.samp, pch=19, cex=0.5, ylim=c(1,10), col="grey",  main="Headline Height/Depth", na.action="na.exclude")
+        plot(opening~depth, r.samp, pch=19, cex=0.3, ylim=c(1,10), col="grey", xlim=c(0,600), na.action="na.exclude")
         depth = seq(0, 750, by=10)
         y.loess <- loess(opening ~ depth, span=0.25, data=r.samp)
         y.predict <- predict(y.loess, newdata=data.frame(depth=depth))
         lines(y.predict~depth, col="blue")
         legend(500,7, c("predicted values"), lty=c(1,1), lwd=c(2.5,2.5), col=c("blue"))
+        text(30,8, "Headline height")
 
         # Modelling predicted values of clearance with Loess
         plot(clearance~depth, r.samp, pch=19, cex=0.5, ylim=c(0,5), col="grey", xlim=c(0,400),  main="Clearance/Depth", na.action="na.exclude")
@@ -367,7 +377,69 @@
         y.predict <- predict(y.loess, newdata=data.frame(depth=depth))
         lines(y.predict~depth, col="blue")
         legend(500,7, c("predicted values"), lty=c(1,1), lwd=c(2.5,2.5), col=c("blue"))
-------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------  
+  
+        # Plotting depth ranges
+        # 0-75
+        d0=r.samp[which(r.samp$depth < 75 & r.samp$depth > 30), ]
+        plot(doorspread~depth, d0, pch=19, cex=0.4, xlim=c(30, 75), main= "doorspread 0-75m")
+        depth = seq(30, 70, by=10)
+        y.loess <- loess(doorspread ~ depth, span=0.25, data=d0)
+        y0.predict <- predict(y.loess, newdata=data.frame(depth=depth))
+        lines(y0.predict~depth, col="blue", lwd=2.5)
+        lm.w75 = lm(doorspread~depth, data=d0)
+        summary(lm.w75)
+        
+        # 0-100
+        d1=r.samp[which(r.samp$depth < 100), ]
+        plot(doorspread~depth, d1, pch=19, cex=0.4, xlim=c(20, 100), main= "doorspread 0-100m")
+        depth = seq(0, 110, by=10)
+        y.loess <- loess(doorspread ~ depth, span=0.25, data=d1)
+        y.predict <- predict(y.loess, newdata=data.frame(depth=depth))
+        lines(y.predict~depth, col="blue", lwd=2.5)
+        lm.w100 = lm(doorspread~depth, data=d0)
+        summary(lm.w100)
+  
+        # 100-200
+        d2=r.samp[which(r.samp$depth > 100 & r.samp$depth < 200), ]
+        plot(doorspread~depth, d2, pch=19, cex=0.4, xlim=c(100, 200), main= "doorspread 100-200m")
+        depth = seq(100, 200, by=10)
+        y.loess <- loess(doorspread ~ depth, span=0.25, data=d2)
+        y1.predict <- predict(y.loess, newdata=data.frame(depth=depth))
+        lines(y1.predict~depth, col="blue", lwd=2.5)
+      
+        # 200-300
+        d3=r.samp[which(r.samp$depth > 200 & r.samp$depth < 300), ]
+        plot(doorspread~depth, d3, pch=19, cex=0.4, xlim=c(200, 300), main= "doorspread 200-300m")
+        depth = seq(200, 300, by=10)
+        y.loess <- loess(doorspread ~ depth, span=0.25, data=d3)
+        y2.predict <- predict(y.loess, newdata=data.frame(depth=depth))
+        lines(y2.predict~depth, col="blue", lwd=2.5)
+  
+        # Only by 100m isn't enough to see trends
+        d4=r.samp[which(r.samp$depth < 200 & r.samp$depth >30), ]
+        plot(doorspread~depth, d4, pch=19, cex=0.4, xlim=c(20, 200), main= "doorspread < 300m")
+        depth = seq(30, 200, by=10)
+        y.loess <- loess(doorspread ~ depth, span=0.25, data=d4)
+        y3.predict <- predict(y.loess, newdata=data.frame(depth=depth))
+        lines(y3.predict~depth, col="blue", lwd=2.5)
+        lm.d100 = lm(doorspread~depth, data=d4)
+        summary(lm.d100)
+        
+        # Look at the deepest depths
+        d5=filteredlm[which(filteredlm$depth > 300), ]
+        plot(doorspread~depth, filteredlm, pch=".", xlim=c(300, 750), main= "doorspread > 300m")
+        depth = seq(300, 750, by=10)
+        y.loess <- loess(doorspread ~ depth, span=0.25, data=d5)
+        y4.predict <- predict(y.loess, newdata=data.frame(depth=depth))
+        lines(y4.predict~depth, col="blue", lwd=2.5)
+        
+        #Linear model
+        lm.w300 = lm(doorspread~depth, data=d4)
+        summary(lm.w300)     
+        plot(lm.w300)
+
+  ------------------------------------------------------------------------------------------------------------------------
 # Calculating mean spreads
     
   # Calculating mean wingspreads per year
@@ -412,86 +484,7 @@
   legend(2011,52, c("overall mean = 55.24m"), lty=c(1,1), lwd=c(2.5, 2.5), col=c("red"))
   title("Mean Annual Doorspreads")
   
----------------------------------------------------------------------------------------------  
-# Trying to match up times in GS, Scanmar and our bc estimates
-    
-    
-  # Need to make a new d.f. to figure out timestamps
-  i=which(!is.finite(gs$bc0.datetime))
-  gs = gs[ -i, ]
-  r.samp=gs[sample(1:nrow(gs), 10, replace=FALSE),]
-  listid = r.samp$id
-  
-  gs.time = data.frame(r.samp$id, r.samp$sdate, r.samp$edate, r.samp$bc0.datetime, r.samp$ bc1.datetime)
-  head(gs.time)
-  colnames(gs.time) =  c("id", "sdate", "edate", "bc0", "bc1")
-  str(gs.time) 
-  write.table(gs.time, file= "gs.time.csv", sep = ",", quote=FALSE, row.names=FALSE, col.names=TRUE)
-  
-  # individual sets from master
-  test=master[which(master$id == "TEL2004530.96"), ]
-  min(test$timestamp, na.rm = TRUE))
-  max(test$timestamp, na.rm = TRUE))
 
-  
-  # Plot fishing time with winches vs fishing time with our methods
-  # Take random sample of ids
-  r.samp=modern.data[sample(1:nrow(modern.data), 10, replace=FALSE),]
-  r.samp$id
-  
-  subgs = gs[which((gs$id == "NED2010002.31")), ]
-  submaster = master[which((master$id == "NED2010002.31")), ]
-  
-  um = which(submaster$depth > 200) 
-  submaster$depth[ um] =NA
-  
-  subfiltered = filtered[which((filtered$id == "NED2013028.51")), ]
-  d=range(submaster$depth, na.rm=TRUE)
-  plot(depth~timestamp,submaster, type = "p", lwd = 1, main =  "Trawl Profile", sub=id, ylim=c(d[2], d[1]))
-  title("Trawl profile")
-  points(depth~timestamp, subfiltered, col = "green")
-  
-  
-  # Min and max time recorded by Scanmar
-  min(submaster$timestamp)
-  max(submaster$timestamp)
-  
-  # Force GSINF times to match Scanmar
-  dated = force_tz(subgs$sdate, tzone = "UTC")
-  dated
-  abline(v = dated, col = "red")
-  stdate = dated + (3*60*60)
-  abline(v=stdate, col="red")
-  
-  datedd = force_tz(subgs$edate, tzone = "UTC")
-  datedd
-  abline(v = datedd, col = "red")
-  endate = datedd + (3*60*60)
-  abline(v=endate, col="red")
-  
-  # Force our calculated bottom times to match Scanmar
-  bc = force_tz(subgs$bc0.datetime, tzone = "UTC")
-  bc0 = bc + 60*60
-  abline(v=bc0, col="blue")
-  
-  bc = force_tz(subgs$bc1.datetime, tzone = "UTC")
-  bc1 = bc + 60*60
-  abline(v=bc1, col="blue")
-  
-    legend(ymd_hms("2010-08-06 12:30:00"),40, c("Fishing time determined by the winch"), lty=c(1,1), lwd=c(2.5,2.5), col=c("red"))
-    legend(ymd_hms("2010-08-06 12:40:00"),40, c("Winch", "Algorithm"), lty=c(1,1), lwd=c(2.5,2.5), col=c("red","blue"))
-  
-
-  # Comparing bottom time estimates, ours versus GSinf
-  gs$gsbt = as.numeric((gs$edate - gs$sdate)/60)
-  gs$bottom_duration = gs$bottom_duration/60
-  gs$diff = abs(gs$gsbt - gs$bottom_duration)
-  
-  plot(gs$diff)
-  hist(gs$diff)
-  
-  summary(gs$bottom_duration)
-  summary(gs$gsbt)
 ------------------------------------------------------------------------  
   # Headline height investigations  
     
@@ -523,5 +516,89 @@
   points(opening~depth, flm04, col="violet", pch=19, cex=0.4)
 
   
-  str(filteredlm)
+  hist(filteredlm$opening, col="light blue", border="navy blue", xlab= "headline height", main="Headline height frequency")
+---------------------------------------------------------------------  
+# Looking at speed
+# First filter to remove error values
+x = filteredlm$ltspeed
+i = which( (x > 10) | (x < 0) ) 
+filteredlm = filteredlm [-i, ]  
+r.samp=filteredlm[sample(1:nrow(filteredlm), 50000, replace=FALSE),]
+
+# wingspread
+plot(wingspread~ltspeed, com12, pch=19, cex=0.2, col="blue", main= "Speed and wingspread 2012")
+  ltspeed = seq(0, 3.5, by=0.5)
+  y.loess <- loess(wingspread ~ ltspeed, span=0.25, data=com12)
+  y6.predict <- predict(y.loess, newdata=data.frame(ltspeed=ltspeed))
+  lines(y6.predict~ltspeed, col="red", lwd=2.5)
+
+# doorspread
+  plot(doorspread~ltspeed, com12, pch=19, cex=0.2, col="blue", main= "Speed and doorspread 2012")
+  ltspeed = seq(0, 3.5, by=0.1)
+  y.loess <- loess(doorspread ~ ltspeed, span=0.25, data=com09)
+  y7.predict <- predict(y.loess, newdata=data.frame(ltspeed=ltspeed))
+  lines(y7.predict~ltspeed, col="red", lwd=2.5)  
   
+# headline height
+  plot(opening~ltspeed, com10, pch=19, cex=0.4, col="blue", main= "Speed and headline height 2010")
+  ltspeed = seq(0, 3.5, by=0.1)
+  y.loess <- loess(opening ~ ltspeed, span=0.25, data=com09)
+  y8.predict <- predict(y.loess, newdata=data.frame(ltspeed=ltspeed))
+  lines(y8.predict~ltspeed, col="red", lwd=2.5)  
+  abline(h=4, col="green", lwd=3)  
+  
+  
+  
+  
+hist(filteredlm$ltspeed, breaks = 40, col="green", main= "Speed frequency", xlab= "Speed (m/s)")
+mean(filteredlm$ltspeed, na.rm=TRUE)
+abline(v=3.5, col="dark grey", lwd = 2.5)
+legend("topleft", c("Standard = 3.5 knots"), lty = c(1,1), lwd = c(2.5, 2.5), col=c("grey"))
+# Speed of trawl is far from what they think its at
+# when do we have speed data?  
+  
+  summary(com14) #none
+  summary(com13) #none  
+  summary(com12) #yes
+  summary(com11) #yes
+  summary(com10) #yes
+  summary(com09) #yes
+  summary(com08) #none
+  summary(com07) #none
+  summary(com06) #none
+  summary(com05) #none
+  summary(com04) #none
+  summary(com90) #none
+  summary(com91) #none
+  
+# Look at speed between years
+  # create data frame with only those years that have speed data
+  speed=filteredlm[which(filteredlm$year == 2009:2012), ]
+  unique(speed$year)
+  
+  # Generate sample
+  allids=unique(speed$id)
+  i=sample(1:length(allids),15)
+  allids=allids[i]
+  
+  for (id in allids){
+    
+    test=which(speed$id==id)
+    i=speed[test,] 
+    if(any(is.finite(i$doorspread))){
+      plot(doorspread~ltspeed,i, main =  "Trawl Geometry and Speed", sub=id, ylim=c(0,90), pch=19, cex=0.5 )
+      points(wingspread~ltspeed, i, col="blue", pch=19, cex=0.5)
+      points(opening~ltspeed, i, col="red", pch=19, cex=0.5)
+      legend("topright", c("Doorspread", "Wingspread", "Headline height"), lty = c(1,1), lwd = c(2.5, 2.5), col=c("black", "red", "blue"))
+      
+    }
+  }
+  -----------------------------------------------------------------------------------------------------------------------------------------
+  # Doorspread and headline height
+    r.samp=filteredlm[sample(1:nrow(filteredlm), 250000, replace=FALSE),]
+    plot(opening~doorspread, r.samp, pch=19, col="blue", cex=0.1)
+    abline(h=2, col="red", lwd=2.5)
+    abline(h=4, col="red", lwd=2.5)
+    abline(h=5, col="red", lwd=2.5)
+    abline(h=3, col="red", lwd=2.5)
+    title("Doorspread and headline height")

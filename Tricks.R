@@ -10,7 +10,7 @@ test=master[which(master$year == 2013), ]
 r.samp=com1[sample(1:nrow(com1), 10000, replace=FALSE),]
 
 # Legends for graphs
-legend(x,y, c("Marport", "Scanmar",), lty = c(1,1), lwd = c(2.5, 2.5), col=c("red", "blue"))
+legend(x,y, c("Marport", "Scanmar"), lty = c(1,1), lwd = c(2.5, 2.5), col=c("red", "blue"))
 legend(ymd_hms("2014-03-19 11:10:25"),250, c("Scanmar", "Marport"), lty=c(1,1), lwd=c(2.5,2.5), col=c("blue","red"))
 
 
@@ -58,4 +58,57 @@ points( depth~ts, x, pch=20, col="blue", cex=0.2)
 # How to subset a variable
 master$date = substring(as.character(master$timestamp), 1,10)
 
+# Creating a linear model
+lm.w100 = lm(doorspread~depth, data=d0)
+summary(lm.w100)
 
+# filter
+x = marport$depth1
+i = which( (x > 750) | (x < 0) ) 
+marport = marport [-i, ]  
+ 
+# Plotting a for loop
+allids=unique(modern.data$id)
+i=sample(1:length(allids),10)
+allids=allids[i]
+
+for (id in allids){
+  
+  test=which(modern.data$id==id)
+  i=modern.data[test,]
+  d=range(i$depth, na.rm=TRUE)
+  if(any(is.finite(d))) {
+    plot(depth~timestamp,i, type = "p", lwd = 1, main =  "Depth", sub=id, ylim=c(d[2], d[1]))
+  }
+}
+
+or
+
+for (id in allids){
+  
+  test=which(master$id==id)
+  i=master[test,] 
+  if(any(is.finite(i$doorspread))){
+    plot(doorspread~timestamp,i, main =  "Trawl Geometry", sub=id, ylim=c(0,90), pch=19, cex=0.5 )
+    points(wingspread~timestamp, i, col="blue", pch=19, cex=0.5)
+    points(opening~timestamp, i, col="red", pch=19, cex=0.5)
+    legend("topright", c("Doorspread", "Wingspread", "Headline height"), lty = c(1,1), lwd = c(2.5, 2.5), col=c("black", "red", "blue"))
+    
+  }
+}
+
+#setwd
+setwd("C:/cygwin64/home/mundenj/work")
+
+# Subsetting a variabel when it is NA
+ed = which(!is.finite(gs$edate))
+ied = gs[ed,]
+head(ied)
+
+#Summaries
+xtabs(~year,filtered)
+
+# Select for those sets < 23 mins
+i = which(gs$bottom_duration < 23*60)
+gs[i,]
+gs[i,"id"]
